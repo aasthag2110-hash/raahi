@@ -37,6 +37,7 @@ Without Exasol variables, the API starts in clearly labelled demo mode. Copy bac
 - Decision thresholds live in RAAHI.DECISION_RULES and travel inside each offline pack.
 - Active reports expire by type; official closures cannot be overridden by community reports.
 - Safety language describes evidence or changed assumptions, never guaranteed safety.
+- Trail Party stores an offline regroup point and shows last-seen peer proximity. The web demo simulates beacon exchange; production requires native Bluetooth Low Energy with explicit permissions.
 
 ## API
 

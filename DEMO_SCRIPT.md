@@ -20,6 +20,8 @@ Toggle Online and synchronize. Explain that REPORT_ID makes retries idempotent. 
 
 Open Trust Receipt. Explain the deliberate separation: corroboration increases evidence confidence, while a verified hazard worsens segment condition.
 
+Briefly open Trail Party, show Kabir out of range, and run Spot nearby friends. Explain that regroup information remains offline and that production peer discovery uses consent-based Bluetooth Low Energy.
+
 ## 2:40–3:00 — Close
 
 Raahi does not claim a trail is safe. It tells travellers what is known, what changed and what assumptions they should reconsider. “The map shows the trail. Raahi shows what changed.”
