@@ -43,6 +43,7 @@ Without Exasol variables, the API starts in clearly labelled demo mode. Copy bac
 - GET /health
 - GET /journey-packs/{trail_id}
 - POST /reports/sync
+- POST /reports/extract
 
 ## Limitations
 

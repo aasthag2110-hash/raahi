@@ -1,5 +1,7 @@
 """Raahi API: Exasol-backed journey packs and idempotent report sync."""
 import os
+import json
+import urllib.request
 from datetime import datetime
 from typing import Literal
 from fastapi import FastAPI
@@ -21,6 +23,39 @@ class Report(BaseModel):
     description: str = Field(max_length=2000)
     source_type: Literal["COMMUNITY","GPS_CONFIRMED"] = "GPS_CONFIRMED"
     observed_at: datetime
+
+class ExtractionRequest(BaseModel):
+    text: str = Field(min_length=4, max_length=2000)
+
+@app.post("/reports/extract")
+def extract_report(request: ExtractionRequest):
+    """Optional LLM extraction; manual structured reporting remains the fallback."""
+    api_url = os.getenv("LLM_API_URL")
+    api_key = os.getenv("LLM_API_KEY")
+    if not api_url or not api_key:
+        return {"mode":"manual_fallback","description":request.text,"requires_review":True}
+    prompt = (
+        "Extract one mountain trail observation as strict JSON with keys "
+        "hazard_type, severity, landmark, weather_related, requires_verification. "
+        "hazard_type must be BRIDGE_DAMAGED, TRAIL_BLOCKED, WATER_SOURCE_DRY, "
+        "SHELTER_UNAVAILABLE, or UNKNOWN. Text: " + request.text
+    )
+    payload = json.dumps({
+        "model":os.getenv("LLM_MODEL","gpt-4.1-mini"),
+        "messages":[{"role":"user","content":prompt}],
+        "response_format":{"type":"json_object"},
+        "temperature":0,
+    }).encode()
+    http_request = urllib.request.Request(
+        api_url, data=payload,
+        headers={"Authorization":"Bearer " + api_key,"Content-Type":"application/json"},
+    )
+    with urllib.request.urlopen(http_request, timeout=15) as response:
+        body = json.loads(response.read())
+    extracted = json.loads(body["choices"][0]["message"]["content"])
+    extracted["mode"] = "ai"
+    extracted["requires_review"] = True
+    return extracted
 
 def connection():
     if not pyexasol or not os.getenv("EXASOL_DSN"):
