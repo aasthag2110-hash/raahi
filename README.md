@@ -48,7 +48,9 @@ The current demo does not automatically read device battery level, and pace is n
 
 Trail Party demonstrates last-seen group proximity, approximate distance, separation state and an agreed regroup point saved with the offline journey context. It is designed around short-lived proximity beacons between paired phones, without continuous internet location upload.
 
-The current web experience is a simulation and does not yet track real friends. Production tracking requires a native mobile implementation using Bluetooth Low Energy, secure pairing, rotating anonymous identifiers, foreground/background permissions, and appropriate privacy and battery controls.
+The web demo now supports creating a party, joining with an invite code or shared link, storing membership locally, sharing the invite through the device share sheet, leaving a party, and saving an offline regroup point. These browser-level flows are functional, but there is no central membership verification yet.
+
+Nearby-member scanning and distances remain a clearly labelled simulation. Production tracking is final-app scope and requires a native mobile implementation using Bluetooth Low Energy, secure QR pairing, rotating anonymous identifiers, foreground/background permissions, and appropriate privacy and battery controls.
 
 ## Demo story
 

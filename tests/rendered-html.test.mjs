@@ -67,3 +67,13 @@ test("stores the journey pack in IndexedDB for offline use", async () => {
   assert.match(source, /navigator\.geolocation\.getCurrentPosition/);
   assert.match(source, /Available offline/);
 });
+
+test("supports persistent Trail Party web-demo pairing without claiming real BLE", async () => {
+  const source = await readFile(new URL("app/RaahiApp.tsx", root), "utf8");
+  assert.match(source, /Create invite code/);
+  assert.match(source, /Join and save offline/);
+  assert.match(source, /raahi_trail_party/);
+  assert.match(source, /navigator\.share/);
+  assert.match(source, /Run demo proximity scan/);
+  assert.match(source, /genuine background detection is reserved for the native BLE app/);
+});
