@@ -2,7 +2,11 @@
 
 **The map shows the trail. Raahi shows what changed.**
 
-Raahi is an offline-first decision-support prototype for occasional mountain travellers. It combines trail segments, weather freshness, traveller observations and journey progress into compact journey packs generated from Exasol.
+Raahi is an offline-first decision-support prototype for occasional mountain travellers. It combines trail segments, weather freshness, traveller observations and journey progress into compact journey packs, with Exasol powering the connected evidence and decision layer.
+
+## The problem
+
+Mountain travellers often lose connectivity exactly when trail conditions, daylight, battery and recent disruption reports matter most. A conventional map can show the planned path, but it does not explain whether the assumptions behind that plan have changed. Raahi turns fragmented trail evidence into a compact, explainable decision checkpoint that remains available offline.
 
 ## Live project
 
@@ -19,6 +23,38 @@ Raahi is an offline-first decision-support prototype for occasional mountain tra
 - Trust receipts that keep evidence confidence separate from hazard condition
 - Trail Party proximity, separation state and a shared offline regroup point
 - Exasol-backed evidence analytics and database-defined decision rules
+
+## Why Exasol
+
+Exasol is Raahi's analytical decision layer. It brings trail structure, time-sensitive observations and traveller reports together before the relevant result is packaged for offline use.
+
+The `RAAHI` schema models:
+
+- trails, ordered trail segments and fallback segments
+- traveller disruption reports with device-generated `REPORT_ID` idempotency keys
+- segment verifications and expiring observations
+- weather observations and resource points such as water and shelter
+- configurable decision thresholds in `RAAHI.DECISION_RULES`
+
+The `RAAHI.SEGMENT_EVIDENCE` analytical view uses Exasol SQL to combine corroboration, source quality, recency and hazard severity. It produces two deliberately separate outputs:
+
+- `EVIDENCE_CONFIDENCE`: how strongly the available information is supported
+- `SEGMENT_CONDITION`: the current disruption state, from no reported disruption through caution, disrupted and avoid
+
+This separation is central to Raahi: several trustworthy reports of a damaged bridge should increase confidence in the evidence while making the route condition worse. FastAPI queries this view and the enabled decision rules to create an explainable journey-pack response, while report synchronization uses `REPORT_ID` to make offline retries idempotent.
+
+Example Exasol query:
+
+```sql
+SELECT
+  SEGMENT_ID,
+  EVIDENCE_CONFIDENCE,
+  HAZARD_POINTS,
+  SEGMENT_CONDITION
+FROM RAAHI.SEGMENT_EVIDENCE
+WHERE TRAIL_ID = 'TRIUND'
+ORDER BY SEGMENT_ID;
+```
 
 ## Map data and rendering
 
@@ -63,6 +99,16 @@ Nearby-member scanning and distances remain a clearly labelled simulation. Produ
 
 Raahi never labels a route “safe.” It exposes evidence, uncertainty and changed assumptions.
 
+## Hackathon judge walkthrough
+
+1. Choose Triund or Hampta Pass and download its journey pack.
+2. Open the route view to inspect alternatives, checkpoints and mapped trail resources.
+3. Switch to offline mode and change pace, daylight or battery inputs to trigger an explainable Decision Checkpoint.
+4. Add a disruption report offline, reconnect and synchronize it with the device-generated report ID.
+5. Inspect the Trust Receipt to see why evidence confidence and segment condition are scored independently.
+6. Create a Trail Party, share its invite code and save an offline regroup point.
+7. In Exasol, query `RAAHI.SEGMENT_EVIDENCE` and `RAAHI.DECISION_RULES` to show the analytical layer behind the journey-pack decisions.
+
 ## Architecture
 
 - React/TypeScript PWA: journey experience, local decision evaluation and offline queue
@@ -86,9 +132,102 @@ Next.js frontend → FastAPI → Exasol
 
 The public Vercel demo works on modern devices because its current packs are static assets. FastAPI and Exasol Personal still run locally and are not used by the deployed frontend. Live multi-device synchronization requires a hosted API and a securely reachable Exasol deployment. Each phone must download its own offline pack before losing connectivity.
 
-## Run locally
+## Run locally with Exasol
 
-Web application: run npm install, then npm run dev. Node.js 20.9 or newer is required.
+This guide runs the full local development stack: the Next.js frontend, the FastAPI backend and Exasol Personal. The current frontend still reads its bundled journey-pack JSON directly; the running API demonstrates the Exasol-backed journey-pack and report-sync endpoints until frontend API integration is completed.
+
+### Prerequisites
+
+- Git
+- Node.js 20.9 or newer and npm
+- Python 3.10 or newer
+- Exasol Personal installed and running
+
+### 1. Clone the project
+
+```bash
+git clone https://github.com/aasthag2110-hash/raahi.git
+cd raahi
+```
+
+### 2. Install the frontend dependencies
+
+```bash
+npm install
+```
+
+### 3. Start and verify Exasol
+
+```bash
+exasol start
+exasol info
+exasol connect -c "SELECT 1;"
+```
+
+The final command should return `1`. The default Exasol Personal SQL endpoint is `127.0.0.1:8563`.
+
+### 4. Create the Raahi database objects
+
+Open the Exasol SQL terminal:
+
+```bash
+exasol connect
+```
+
+Run the contents of `database/schema.sql` first, followed by `database/seed.sql`. The schema file creates the `RAAHI` schema and its tables and views; the seed file adds the initial trails, segments, evidence and decision rules.
+
+### 5. Configure and install the FastAPI backend
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r backend/requirements.txt
+cp backend/.env.example backend/.env
+```
+
+Edit `backend/.env` and set the Exasol connection values:
+
+```dotenv
+EXASOL_DSN=127.0.0.1:8563
+EXASOL_USER=sys
+EXASOL_PASSWORD=your-exasol-password
+```
+
+The `LLM_API_*` values are optional and are only used by the report-extraction endpoint. Do not commit `backend/.env` or any real credentials.
+
+Load the environment variables and start the API from the repository root:
+
+```bash
+set -a
+source backend/.env
+set +a
+uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+Keep this terminal running. Verify the API at:
+
+- Health check: http://127.0.0.1:8000/health
+- Interactive API documentation: http://127.0.0.1:8000/docs
+
+The health response should report `"database": "exasol"`.
+
+### 6. Start the frontend
+
+Open a second terminal in the repository and run:
+
+```bash
+npm run dev
+```
+
+Open http://localhost:3000 in a browser. Keep Exasol, FastAPI and the frontend running while testing the local development stack.
+
+### Troubleshooting
+
+- If `exasol` is not found, finish the Exasol Personal installation or reopen the terminal so its CLI is on your `PATH`.
+- If the API cannot connect, confirm that Exasol is running, the DSN is `127.0.0.1:8563`, and the username and password in `backend/.env` are correct.
+- If `/health` reports `"database": "demo"`, the Exasol environment variables were not loaded. Run the `set -a`, `source` and `set +a` commands again before starting Uvicorn.
+- If port 3000 or 8000 is already in use, stop the older Raahi process before starting a new one.
+- `localhost` only refers to the device on which the server is running. For testing from a phone on the same Wi-Fi network, start the frontend with `npm run dev -- --hostname 0.0.0.0` and open the computer's local network IP address with port 3000. Firewall permission may be required.
 
 ## Deploy the frontend to Vercel
 
@@ -133,6 +272,8 @@ Without Exasol variables, the API starts in clearly labelled demo mode. Copy bac
 - POST /reports/sync
 - POST /reports/extract
 
-## Limitations
+## Prototype scope and responsible use
 
-The included trail metadata and traveller observations are demonstration data. Raahi is not a certified navigation, rescue or safety service and does not replace official advisories, local guides or personal judgement.
+This hackathon build validates the complete product concept: offline journey packs, explainable checkpoints, idempotent reporting, Exasol evidence analytics and Trail Party pairing. The browser experience uses bundled journey packs so it can be demonstrated reliably on Vercel and without connectivity; the included FastAPI service exposes the Exasol-backed journey-pack and report-sync path for local evaluation. A production rollout would host that service and Exasol securely, add verified trail data sources and implement real proximity exchange in the planned native mobile app.
+
+The included trail metadata and traveller observations are demonstration data. Raahi is decision support—not a certified navigation, rescue or safety service—and should be used alongside official advisories, local guides and personal judgement.
