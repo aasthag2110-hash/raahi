@@ -229,15 +229,6 @@ Open http://localhost:3000 in a browser. Keep Exasol, FastAPI and the frontend r
 - If port 3000 or 8000 is already in use, stop the older Raahi process before starting a new one.
 - `localhost` only refers to the device on which the server is running. For testing from a phone on the same Wi-Fi network, start the frontend with `npm run dev -- --hostname 0.0.0.0` and open the computer's local network IP address with port 3000. Firewall permission may be required.
 
-## Deploy the frontend to Vercel
-
-The public demo is a standard Next.js application. Import this repository in Vercel or run `vercel deploy`. The Triund and Hampta journey packs are bundled as static assets and remain downloadable into IndexedDB for offline use.
-
-The included FastAPI/Exasol service is not required for the frontend demo. Production report synchronization requires a separately reachable Exasol SaaS or cloud deployment and secure backend environment variables. Never commit Exasol credentials.
-
-API: create a Python virtual environment, install backend/requirements.txt, then run uvicorn backend.main:app --reload.
-
-Without Exasol variables, the API starts in clearly labelled demo mode. Copy backend/.env.example, provide the Exasol Personal connection values, then apply database/schema.sql followed by database/seed.sql.
 
 ## Core consistency rules
 
