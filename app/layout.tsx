@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import "./raahi.css";
+import "./navigation.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,8 +18,8 @@ export const metadata: Metadata = {
   title: "Raahi — Offline mountain decision support",
   description: "Know what changed before you take the next step.",
   icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
+    icon: "/raahi-logo.png",
+    shortcut: "/raahi-logo.png",
   },
   manifest: "/manifest.json",
   openGraph: {

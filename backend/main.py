@@ -2,7 +2,7 @@
 import os
 import json
 import urllib.request
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Literal
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
@@ -75,11 +75,11 @@ def health():
 def journey_pack(trail_id: str):
     db = connection()
     if db:
-        evidence = db.export_to_list(
-            "SELECT * FROM RAAHI.SEGMENT_EVIDENCE WHERE TRAIL_ID = ? ORDER BY SEGMENT_ID",
-            [trail_id],
-        )
-        rules = db.export_to_list("SELECT * FROM RAAHI.DECISION_RULES WHERE ENABLED = TRUE")
+        evidence = db.execute(
+            "SELECT * FROM RAAHI.SEGMENT_EVIDENCE WHERE TRAIL_ID = {trail_id} ORDER BY SEGMENT_ID",
+            {"trail_id": trail_id},
+        ).fetchall()
+        rules = db.execute("SELECT * FROM RAAHI.DECISION_RULES WHERE ENABLED = TRUE").fetchall()
         return {"trail_id":trail_id,"generated_at":datetime.utcnow(),"evidence":evidence,"rules":rules}
     return {"trail_id":trail_id,"mode":"demo","generated_at":datetime.utcnow(),"rules":{
         "pace_ratio":0.75,"daylight_buffer_min":90,"weather_age_hours":6,"battery_percent":20
@@ -91,16 +91,28 @@ def sync(report: Report):
     db = connection()
     if db:
         exists = db.execute(
-            "SELECT COUNT(*) FROM RAAHI.TRAVELLER_REPORTS WHERE REPORT_ID = ?",
-            [report.report_id],
+            "SELECT COUNT(*) FROM RAAHI.TRAVELLER_REPORTS WHERE REPORT_ID = {report_id}",
+            {"report_id": report.report_id},
         ).fetchval()
         if not exists:
             db.execute(
                 """INSERT INTO RAAHI.TRAVELLER_REPORTS
                 (REPORT_ID,SEGMENT_ID,HAZARD_TYPE,SEVERITY,DESCRIPTION,SOURCE_TYPE,OBSERVED_AT)
-                VALUES (?,?,?,?,?,?,?)""",
-                [report.report_id,report.segment_id,report.hazard_type,report.severity,
-                 report.description,report.source_type,report.observed_at],
+                VALUES ({report_id},{segment_id},{hazard_type},{severity},
+                        {description},{source_type},{observed_at})""",
+                {
+                    "report_id": report.report_id,
+                    "segment_id": report.segment_id,
+                    "hazard_type": report.hazard_type,
+                    "severity": report.severity,
+                    "description": report.description,
+                    "source_type": report.source_type,
+                    "observed_at": (
+                        report.observed_at.astimezone(timezone.utc).replace(tzinfo=None)
+                        if report.observed_at.tzinfo
+                        else report.observed_at
+                    ),
+                },
             )
         return {"report_id":report.report_id,"status":"synced","duplicate":bool(exists)}
     duplicate = report.report_id in memory_reports

@@ -20,11 +20,17 @@ Raahi never labels a route “safe.” It exposes evidence, uncertainty and chan
 - React/TypeScript PWA: journey experience, local decision evaluation and offline queue
 - FastAPI: journey-pack and idempotent report-sync endpoints
 - Exasol Personal: primary platform for reports, routes, decision rules and evidence analytics
-- Local storage/service worker: hackathon demo cache; production would use IndexedDB
+- IndexedDB/service worker: device-local offline journey packs and report queue
 
 ## Run locally
 
-Web application: run npm install, then npm run dev. Node.js 22.13 or newer is required.
+Web application: run npm install, then npm run dev. Node.js 20.9 or newer is required.
+
+## Deploy the frontend to Vercel
+
+The public demo is a standard Next.js application. Import this repository in Vercel or run `vercel deploy`. The Triund and Hampta journey packs are bundled as static assets and remain downloadable into IndexedDB for offline use.
+
+The included FastAPI/Exasol service is not required for the frontend demo. Production report synchronization requires a separately reachable Exasol SaaS or cloud deployment and secure backend environment variables. Never commit Exasol credentials.
 
 API: create a Python virtual environment, install backend/requirements.txt, then run uvicorn backend.main:app --reload.
 
