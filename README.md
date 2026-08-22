@@ -10,7 +10,7 @@ Mountain travellers often lose connectivity exactly when trail conditions, dayli
 
 ## Live project
 
-- Application: https://raahi-ee752pi60-guptaaastha2410-1177s-projects.vercel.app/
+- Application: https://raahi-nu.vercel.app
 - Source: https://github.com/aasthag2110-hash/raahi
 
 ## Features
