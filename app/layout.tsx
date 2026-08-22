@@ -4,6 +4,7 @@ import "./globals.css";
 import "./raahi.css";
 import "./navigation.css";
 import "./editorial.css";
+import "./field-notebook.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
