@@ -3,6 +3,15 @@
 **The map shows the trail. Raahi shows what changed.**
 
 Raahi is an offline-first decision-support prototype for occasional mountain travellers. It combines trail segments, weather freshness, traveller observations and journey progress into compact journey packs, with Exasol powering the connected evidence and decision layer.
+<img width="1470" height="956" alt="image" src="https://github.com/user-attachments/assets/44ad959f-36de-410a-8a43-084e83f2490c" /> 
+<img width="1470" height="956" alt="image" src="https://github.com/user-attachments/assets/5aca0623-0889-4d80-adb7-e157b08eaf1f" />
+<img width="1470" height="956" alt="image" src="https://github.com/user-attachments/assets/f7dc8563-e9d0-4184-9311-4b1fa8c651e0" />
+<img width="1470" height="956" alt="image" src="https://github.com/user-attachments/assets/d8d6f6ae-a2e6-4808-9e0a-f64deb788ff5" />
+<img width="1470" height="956" alt="image" src="https://github.com/user-attachments/assets/dd72979f-6258-4e43-b14a-d7760cfbb103" />
+
+
+
+
 
 ## The problem
 
@@ -10,7 +19,9 @@ Mountain travellers often lose connectivity exactly when trail conditions, dayli
 
 ## Live project
 
+- Demo Video: https://drive.google.com/file/d/1EmqOTsHKrsonkZJjvKvedHsv7xReoYd-/view?usp=sharing
 - Application: https://raahi-nu.vercel.app
+- Pitch Deck(ppt): https://docs.google.com/presentation/d/1Z4YOYelI8YpPCLz0AAUnsRVU3xfXefoK/edit?usp=sharing&ouid=110081491359284643273&rtpof=true&sd=true
 - Source: https://github.com/aasthag2110-hash/raahi
 
 ## Features
